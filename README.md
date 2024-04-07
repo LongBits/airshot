@@ -1,6 +1,6 @@
 # Airshot
 
-Just a basic script that will look for HTTP requests in open networks and inject HTTP redirects
+Just a basic script that will look for HTTP/DNS requests in open networks and inject HTTP redirects or DNS resolutions to a server you specify
 
 
 
