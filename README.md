@@ -7,7 +7,7 @@ Just a basic script that will look for HTTP requests in open networks and inject
 ### Directions
 ```bash
 sudo airmon-ng start <interface>
-./airshot.py -i <interface> -c <channel>
+./airshot.py -i <interface> -c <channel> -url <redirect_url>
 ```
 
 
